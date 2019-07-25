@@ -77,8 +77,8 @@ public class Digest {
         }
     }
 
-    public static void makeFile(byte[] bytes){
-        File newFile = new File("samples/fake.bmp");
+    public static void makeFile(byte[] bytes, String name){
+        File newFile = new File("samples/" + name);
         try{
             OutputStream os = new FileOutputStream(newFile);
             os.write(bytes);
@@ -92,14 +92,16 @@ public class Digest {
         File file = new File("samples/" + read);
         try {
             byte[] bytes = getBytes(file);
-            List<byte[]> digested = digest(bytes);
+            List<List<byte[]>> pairs = Builder.construct(bytes);
+            byte[] built = Builder.assemble(pairs);
+            makeFile(built, write);
         } catch (Exception e){
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
-        test("test1.bmp");
+        /*test("test1.bmp");
         String a = test("test1.bmp");
         String b = test("test2.bmp");
         test("test3.bmp");
@@ -119,6 +121,8 @@ public class Digest {
             if (a.charAt(i) != b.charAt(i)){
                 System.out.println(a.charAt(i)+"-"+b.charAt(i));
             }
-        }
+        }*/
+        testBuild("test1.bmp","build1.bmp");
+        testBuild("test2.bmp","build2.bmp");
     }
 }
