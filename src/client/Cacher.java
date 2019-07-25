@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 public class Cacher {
     final static String host = "localhost";
-    final static int portNumber = 8010;
+    final static int portNumber = 8011;
     public static void main(String[] args) {
         try {
             connect("test1.bmp");
@@ -26,14 +26,14 @@ public class Cacher {
             DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-            byte[] input1 = read(dataInputStream);
+            //byte[] input1 = read(dataInputStream);
 
             Scanner userInputScanner = new Scanner(new InputStreamReader(System.in));
             String userInput = userInputScanner.nextLine();
 
             out.println(userInput);
 
-            byte[] input2 = read(dataInputStream);
+            //byte[] input2 = read(dataInputStream);
 
             if ("exit".equalsIgnoreCase(userInput)) {
                 socket.close();
