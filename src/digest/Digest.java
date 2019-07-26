@@ -123,6 +123,9 @@ public class Digest {
             }
         }*/
         testBuild("test1.bmp","build1.bmp");
+        testBuild("test1.bmp","build1.bmp");
+        testBuild("test2.bmp","build2.bmp");
+        Builder.clear();
         testBuild("test2.bmp","build2.bmp");
     }
 }

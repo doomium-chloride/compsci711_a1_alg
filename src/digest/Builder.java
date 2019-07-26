@@ -1,12 +1,12 @@
 package digest;
 
 import java.util.*;
-
+@SuppressWarnings("Duplicates")
 public class Builder {
     public static Map<String, byte[]> map = new HashMap<>();
     public static Set<String> sent = new HashSet<>();
     public static List<List<byte[]>> construct(byte[] file){
-        List<byte[]> chunks = Digest.digest(file);
+        //List<byte[]> chunks = Digest.digest(file);
         List<byte[]> raw = new ArrayList<>();
         List<byte[]> digested = Digest.getHashList(file);
         List<byte[]> hashList = new ArrayList<>();
