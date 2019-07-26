@@ -37,7 +37,7 @@ public class Server {
                 } else if (line.toLowerCase().trim().equals("list")){
                     //todo list all files
                     out.println("list files");
-                    list();
+                    list(out);
                 } else if (line.startsWith("dl:")){
                     String filename = line.substring(3);
                     out.println("download " + filename);
@@ -49,15 +49,15 @@ public class Server {
             e.printStackTrace();
         }
     }
-    private String list(){
+    private String list(PrintWriter out){
         File folder = new File("samples");
         File[] listOfFiles = folder.listFiles();
 
         for (int i = 0; i < listOfFiles.length; i++) {
             if (listOfFiles[i].isFile()) {
-                System.out.println("File " + listOfFiles[i].getName());
+                out.println("File " + listOfFiles[i].getName());
             } else if (listOfFiles[i].isDirectory()) {
-                System.out.println("Directory " + listOfFiles[i].getName());
+                out.println("Directory " + listOfFiles[i].getName());
             }
         }
         return null;
