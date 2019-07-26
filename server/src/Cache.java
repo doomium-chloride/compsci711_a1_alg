@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -28,11 +29,34 @@ public class Cache {
         return fragment(getBytes(file));
     }
     @SuppressWarnings("Duplicates")
-    public List<byte[]> fragment(byte[] bytes){
+    public boolean rabin(byte[] bytes, int start, int max){
+        byte[] copy = Arrays.copyOfRange(bytes, start, Math.min(start + 3, max));
+        byte[] hash = messageDigest.digest(copy);
+        int x = new BigInteger(hash).intValue()%byteLen;
+        return x == 0;
+    }
+    @SuppressWarnings("Duplicates")
+    public List<byte[]> fragment(byte[] bytes) {
         List<byte[]> list = new ArrayList<>();
-        for (int i = 0; i < bytes.length; i += byteLen) {
-            byte[] array = Arrays.copyOfRange(bytes, i, Math.min(i + byteLen, bytes.length));
-            list.add(array);
+        int len = bytes.length;
+        int start = 0;
+        int left = start;
+        int end = 3;
+        int right = end;
+        while (true) {
+            if (end >= len){
+                right = len;
+                byte[] copy = Arrays.copyOfRange(bytes, left, right);
+                list.add(copy);
+                break;
+            }
+            if (rabin(bytes, start, end)){
+                right = end;
+                byte[] copy = Arrays.copyOfRange(bytes, left, right);
+                list.add(copy);
+                left = right;
+            }
+            end++;start++;
         }
         return list;
     }
@@ -60,4 +84,8 @@ public class Cache {
     public void clear(){
         map.clear();
     }
+    public byte[] get(String key){
+        return map.get(key);
+    }
+
 }

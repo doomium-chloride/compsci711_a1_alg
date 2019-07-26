@@ -61,14 +61,6 @@ public class Digest {
         int right = end;
         int breaks = 0;
         while(true){
-            if (rabin(bytes, start, end)){
-                right = start;
-                byte[] copy = Arrays.copyOfRange(bytes, left, right);
-                list.add(copy);
-                breaks++;
-                left = right;
-            }
-            end++;start++;
             if (end >= len){
                 right = len;
                 byte[] copy = Arrays.copyOfRange(bytes, left, right);
@@ -76,6 +68,14 @@ public class Digest {
                 breaks++;
                 break;
             }
+            if (rabin(bytes, start, end)){
+                right = end;
+                byte[] copy = Arrays.copyOfRange(bytes, left, right);
+                list.add(copy);
+                breaks++;
+                left = right;
+            }
+            end++;start++;
         }
         System.out.println(bytes.length/breaks + "KB");
         return list;
