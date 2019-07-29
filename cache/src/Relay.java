@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -5,7 +6,7 @@ import java.util.*;
 
 public class Relay {
     final static String DIRECTORY = "samples/";
-    final static int portNumber = 8010;
+    final static int portNumber = 8010;//connects to client
     static CacheClient cacheClient;
     public static void main(String[] args) {
         new Relay().connect();
@@ -16,7 +17,6 @@ public class Relay {
     }
 
     public void connect(){
-        CacheClient.init();
         init();
         try (
                 ServerSocket serverSocket = new ServerSocket(portNumber);
@@ -36,42 +36,45 @@ public class Relay {
         ) {
             boolean done = false;
 //&& in.hasNextLine()
-            while(!done) {
+            while(!done){
 
-                Message message = (Message) ois.readObject();
+                Packet message = (Packet) ois.readObject();
 
                 switch (message.type){
                     case "text":
                         switch (message.text){
                             case "exit":
-                                oos.writeObject(message);
+                                cacheClient.send(message);
                                 System.out.println("system exit");
                                 done = true;
                                 break;
                             case "clear":
-                                oos.writeObject(message);
+                                cacheClient.send(message);
                                 Builder.clear();
                                 break;
                             case "list":
-                                oos.writeObject(message);
+                                cacheClient.send(message);
+                                Packet listReply = CacheClient.read(ois);
                                 break;
                         }
                     case "file":
-                        oos.writeObject(message);
+                        cacheClient.send(message);
                         break;
                     case "list":
                         List<File> fileList = message.files;
                         String listStr = list2str(fileList);
-                        Message sendList = Message.text(listStr);
-                        oos.writeObject(sendList);
+                        Packet sendList = Packet.text(listStr);
+                        cacheClient.send(sendList);
                         break;
                     case "bytes":
-                        byte[] bytes = Builder.assemble(message.pack);
                         break;
                     case "pack":
-
+                        byte[] bytes = Builder.assemble(message.pack);
+                        Packet sendBytes = Packet.bytes(bytes);
+                        cacheClient.send(sendBytes);
                         break;
                     default:
+                        System.out.println("Invalid command");
                         break;
                 }
             }
@@ -106,20 +109,6 @@ public class Relay {
             sb.append(toString(b));
         }
         return sb.toString();
-    }
-    public byte[] relay2bytes(String message){
-        try {
-            return CacheClient.getBytes(message);
-        } catch (IOException e){
-            throw new RuntimeException(e);
-        }
-    }
-    public String relay2str(String message){
-        try {
-            return CacheClient.getString(message);
-        } catch (IOException e){
-            throw new RuntimeException(e);
-        }
     }
 
 }

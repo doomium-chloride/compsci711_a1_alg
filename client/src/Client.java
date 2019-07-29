@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.Socket;
-import java.util.List;
 
 public class Client {
     final static String host = "localhost";
@@ -13,7 +12,7 @@ public class Client {
             throw new RuntimeException(e);
         }
     }
-        public static Message connect(String command) throws IOException, ClassNotFoundException {
+        public static Packet connect(String command) throws IOException, ClassNotFoundException {
 
         System.out.println("Creating socket to '" + host + "' on port " + portNumber);
         try(
@@ -25,8 +24,8 @@ public class Client {
                         new ObjectOutputStream(new DataOutputStream(socket.getOutputStream()))
         ){
 
-            oos.writeObject(Message.text(command));
-            return (Message) ois.readObject();
+            oos.writeObject(Packet.text(command));
+            return (Packet) ois.readObject();
         }
 
     }

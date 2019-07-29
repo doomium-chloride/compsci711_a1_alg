@@ -40,7 +40,7 @@ public class Server {
 //&& in.hasNextLine()
             while(!done) {
 
-                Message message = (Message) ois.readObject();
+                Packet message = (Packet) ois.readObject();
 
                 switch (message.type){
                     case "text":
