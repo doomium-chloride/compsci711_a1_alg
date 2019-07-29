@@ -48,13 +48,20 @@ public class Server {
                             case "exit":
                                 System.out.println("system exit");
                                 done = true;
-                                return;
+                                break;
                             case "list":
-
+                                List<File> files = list();
+                                oos.writeObject(files);
+                                break;
+                            case "clear":
+                                clear();
+                                break;
                         }
-                        if ("exit".equals(message.text)){
-
-                        } else ()
+                        break;
+                    case "file":
+                        File file = getFile(message.text);
+                        boolean succeedSend = send(file, oos);
+                        System.out.println("send succeeded " + succeedSend);
                         break;
                     case "list":
                         break;
@@ -64,31 +71,6 @@ public class Server {
                         break;
                     default:
                         break;
-                }
-
-                String line = (String) ois.readObject();
-
-                if(line.toLowerCase().equals("exit")) {
-                    System.out.println("system exit");
-                    done = true;
-                } else if (line.toLowerCase().trim().equals("list")){
-                    //todo list all files
-                    oos.writeObject(list(dataOut));
-                } else if (line.startsWith("dl:")){
-                    String filename = line.substring(3);
-                    //todo download selected file
-                    File file = new File(DIRECTORY + filename);
-                    boolean succ = false;
-                    try {
-                        succ = send(file, dataOut);
-                    } catch (RuntimeException e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println("send succeeded " + succ);
-                } else if (line.toLowerCase().trim().equals("clear")){
-                    clear();
-                } else {
-                    System.out.println("Nothing");
                 }
             }
             System.out.println("ended");
@@ -110,25 +92,29 @@ public class Server {
         }
         return null;
     }*/
-    private List<File> list(BufferedOutputStream out){
+    private List<File> list(){
         File folder = new File("samples");
         File[] listOfFiles = folder.listFiles();
         return Arrays.asList(listOfFiles);
     }
-    private boolean send(File file, BufferedOutputStream out){//returns success
+    private File getFile(String name){
+        File file = new File(DIRECTORY + name);
+        if (file.exists()){
+            return file;
+        }
+        return null;
+    }
+    private boolean send(File file, ObjectOutputStream oos){//returns success
         if (!file.exists()){
             return false;
         }
         List<byte[]> fragments, hashList;
         List<List<byte[]>> pack;
-        try(
-                ObjectOutputStream oos = new ObjectOutputStream(out)
-                ){
+        try{
             fragments = cache.fragment(file);
             hashList = cache.getHashList(fragments);
             pack = pack(hashList);
             oos.writeObject(pack);
-            out.flush();
         } catch (IOException e){
             e.printStackTrace();
             return false;

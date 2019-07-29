@@ -28,4 +28,11 @@ public class Message implements Serializable {
         message.text = text;
         return message;
     }
+
+    public static Message file(String text){
+        Message message = new Message();
+        message.type = "file";
+        message.text = text;
+        return message;
+    }
 }

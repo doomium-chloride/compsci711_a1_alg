@@ -7,9 +7,31 @@ public class Message implements Serializable {
     public List<List<byte[]>> pack;
     public List<File> files;
     public byte[] bytes;
+
+
+    public static Message list(List<File> files){
+        Message message = new Message();
+        message.type = "list";
+        message.files = files;
+        return message;
+    }
+    public static Message pack(List<List<byte[]>> pack){
+        Message message = new Message();
+        message.type = "pack";
+        message.pack = pack;
+        return message;
+    }
+
     public static Message text(String text){
         Message message = new Message();
         message.type = "text";
+        message.text = text;
+        return message;
+    }
+
+    public static Message file(String text){
+        Message message = new Message();
+        message.type = "file";
         message.text = text;
         return message;
     }

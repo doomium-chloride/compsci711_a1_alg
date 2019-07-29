@@ -42,53 +42,37 @@ public class Relay {
 
                 switch (message.type){
                     case "text":
-                        if ("exit".equals(message.text)){
-                            oos.writeObject(message);
-                            System.out.println("system exit");
-                            done = true;
-                            break;
+                        switch (message.text){
+                            case "exit":
+                                oos.writeObject(message);
+                                System.out.println("system exit");
+                                done = true;
+                                break;
+                            case "clear":
+                                oos.writeObject(message);
+                                Builder.clear();
+                                break;
+                            case "list":
+                                oos.writeObject(message);
+                                break;
                         }
+                    case "file":
+                        oos.writeObject(message);
                         break;
                     case "list":
+                        List<File> fileList = message.files;
+                        String listStr = list2str(fileList);
+                        Message sendList = Message.text(listStr);
+                        oos.writeObject(sendList);
                         break;
                     case "bytes":
+                        byte[] bytes = Builder.assemble(message.pack);
                         break;
                     case "pack":
+
                         break;
                     default:
                         break;
-                }
-
-                if(line.toLowerCase().equals("exit")) {
-                    reply = relay2str("exit");
-
-                } else if (line.toLowerCase().trim().equals("list")){
-                    //todo list all files
-                    File[] files = CacheClient.getFiles("list");
-                    for (File file:
-                         files) {
-                        out.println(file.getName());
-                    }
-                } else if (line.startsWith("dl:")){
-                    input = relay2bytes(line);
-
-                    String filename = line.substring(3);
-                    out.println("download " + filename);
-                    //todo assemble
-                    File file = new File(DIRECTORY + filename);
-                    boolean succ = false;
-                    try {
-                        //succ = send(file, dataOut);
-                    } catch (RuntimeException e) {
-                        e.printStackTrace();
-                    }
-                    out.println("send succeeded " + succ);
-                    System.out.println("send succeeded " + succ);
-                } else if (line.toLowerCase().trim().equals("clear")){
-                    reply = relay2str("clear");
-                    System.out.println("clear");
-                } else {
-                    out.println("Enter a command");
                 }
             }
             System.out.println("ended");
@@ -96,6 +80,15 @@ public class Relay {
         catch (Exception e){
             e.printStackTrace();
         }
+    }
+    private String list2str(List<File> files){
+        StringBuilder stringBuilder = new StringBuilder();
+        for (File file:
+             files) {
+            stringBuilder.append(file.getName());
+            stringBuilder.append('\n');
+        }
+        return stringBuilder.toString();
     }
 
     public static String toString(byte[] bytes){
