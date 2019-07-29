@@ -7,8 +7,13 @@ public class Server {
     final static int portNumber = 8011;
     Cache cache;
     Set<String> sent;
+    static boolean done = false;
     public static void main(String[] args) {
-        new Server().connect();
+        Server server = new Server();
+        while(!done) {
+            server.connect();
+            done = true;
+        }
     }
 
     private void init(){
@@ -21,42 +26,78 @@ public class Server {
         try (
                 ServerSocket serverSocket = new ServerSocket(portNumber);
                 Socket clientSocket = serverSocket.accept();
-                PrintWriter out =
+                /*PrintWriter out =
                         new PrintWriter(clientSocket.getOutputStream(), true);
                 Scanner in = new Scanner(
-                        new InputStreamReader(clientSocket.getInputStream()));
+                        new InputStreamReader(clientSocket.getInputStream()));*/
                 BufferedOutputStream dataOut =
                         new BufferedOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
+                ObjectInputStream ois =
+                        new ObjectInputStream(new DataInputStream(clientSocket.getInputStream()));
+                ObjectOutputStream oos =
+                        new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()))
         ) {
-            boolean done = false;
+//&& in.hasNextLine()
+            while(!done) {
 
-            while(!done && in.hasNextLine()) {
-                String line = in.nextLine();
-                out.println("Command: " + line);
+                Message message = (Message) ois.readObject();
 
-                if(line.toLowerCase().trim().equals("exit")) {
+                switch (message.type){
+                    case "text":
+                        switch (message.text){
+                            case "exit":
+                                System.out.println("system exit");
+                                done = true;
+                                return;
+                            case "list":
+
+                        }
+                        if ("exit".equals(message.text)){
+
+                        } else ()
+                        break;
+                    case "list":
+                        break;
+                    case "bytes":
+                        break;
+                    case "pack":
+                        break;
+                    default:
+                        break;
+                }
+
+                String line = (String) ois.readObject();
+
+                if(line.toLowerCase().equals("exit")) {
+                    System.out.println("system exit");
                     done = true;
                 } else if (line.toLowerCase().trim().equals("list")){
                     //todo list all files
-                    out.println("list files");
-                    list(out);
+                    oos.writeObject(list(dataOut));
                 } else if (line.startsWith("dl:")){
                     String filename = line.substring(3);
-                    out.println("download " + filename);
                     //todo download selected file
                     File file = new File(DIRECTORY + filename);
-                    boolean succ = send(file, dataOut);
+                    boolean succ = false;
+                    try {
+                        succ = send(file, dataOut);
+                    } catch (RuntimeException e) {
+                        e.printStackTrace();
+                    }
                     System.out.println("send succeeded " + succ);
                 } else if (line.toLowerCase().trim().equals("clear")){
                     clear();
+                } else {
+                    System.out.println("Nothing");
                 }
             }
+            System.out.println("ended");
         }
         catch (Exception e){
             e.printStackTrace();
         }
     }
-    private String list(PrintWriter out){
+    /*private String list(PrintWriter out){
         File folder = new File("samples");
         File[] listOfFiles = folder.listFiles();
 
@@ -68,8 +109,16 @@ public class Server {
             }
         }
         return null;
+    }*/
+    private List<File> list(BufferedOutputStream out){
+        File folder = new File("samples");
+        File[] listOfFiles = folder.listFiles();
+        return Arrays.asList(listOfFiles);
     }
     private boolean send(File file, BufferedOutputStream out){//returns success
+        if (!file.exists()){
+            return false;
+        }
         List<byte[]> fragments, hashList;
         List<List<byte[]>> pack;
         try(
@@ -79,6 +128,7 @@ public class Server {
             hashList = cache.getHashList(fragments);
             pack = pack(hashList);
             oos.writeObject(pack);
+            out.flush();
         } catch (IOException e){
             e.printStackTrace();
             return false;
