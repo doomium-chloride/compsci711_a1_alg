@@ -19,6 +19,7 @@ public class Server {
     private void init(){
         sent = new HashSet<>();
         cache = new Cache();
+        System.out.println("Server initialised, port: " + portNumber);
     }
 
     public void connect(){
@@ -32,18 +33,22 @@ public class Server {
                         new InputStreamReader(clientSocket.getInputStream()));*/
                 BufferedOutputStream dataOut =
                         new BufferedOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
+                ObjectOutputStream oos =
+                        new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
                 ObjectInputStream ois =
                         new ObjectInputStream(new DataInputStream(clientSocket.getInputStream()));
-                ObjectOutputStream oos =
-                        new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()))
         ) {
 //&& in.hasNextLine()
             while(!done) {
+                System.out.println("waiting for requests");
 
                 Packet message = (Packet) ois.readObject();
 
+                System.out.println("type=" + message.type);
+
                 switch (message.type){
                     case "text":
+                        System.out.println("text=" + message.text);
                         switch (message.text){
                             case "exit":
                                 System.out.println("system exit");
@@ -51,7 +56,8 @@ public class Server {
                                 break;
                             case "list":
                                 List<File> files = list();
-                                oos.writeObject(files);
+                                Packet listSend = Packet.list(files);
+                                oos.writeObject(listSend);
                                 break;
                             case "clear":
                                 clear();
@@ -62,14 +68,13 @@ public class Server {
                         File file = getFile(message.text);
                         boolean succeedSend = send(file, oos);
                         System.out.println("send succeeded " + succeedSend);
-                        break;
-                    case "list":
-                        break;
-                    case "bytes":
-                        break;
-                    case "pack":
+                        if (!succeedSend){// fail message
+                            Packet fail = Packet.text("File transfer failed");
+                            oos.writeObject(fail);
+                        }
                         break;
                     default:
+                        System.out.println("invalid request");
                         break;
                 }
             }
@@ -105,8 +110,8 @@ public class Server {
         return null;
     }
     private boolean send(File file, ObjectOutputStream oos){//returns success
-        if (!file.exists()){
-            return false;
+        if (file == null || !file.exists()){
+            return false;//fail
         }
         List<byte[]> fragments, hashList;
         List<List<byte[]>> pack;
@@ -114,7 +119,8 @@ public class Server {
             fragments = cache.fragment(file);
             hashList = cache.getHashList(fragments);
             pack = pack(hashList);
-            oos.writeObject(pack);
+            Packet packet = Packet.pack(pack);
+            oos.writeObject(packet);
         } catch (IOException e){
             e.printStackTrace();
             return false;

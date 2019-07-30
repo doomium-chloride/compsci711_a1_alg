@@ -35,4 +35,11 @@ public class Packet implements Serializable {
         message.text = text;
         return message;
     }
+
+    public static Packet bytes(byte[] bytes){
+        Packet message = new Packet();
+        message.type = "bytes";
+        message.bytes = bytes;
+        return message;
+    }
 }

@@ -14,6 +14,7 @@ public class Relay {
 
     private void init(){
         cacheClient = new CacheClient();
+        System.out.println("Cache server initialised, port: " + portNumber);
     }
 
     public void connect(){
@@ -21,27 +22,23 @@ public class Relay {
         try (
                 ServerSocket serverSocket = new ServerSocket(portNumber);
                 Socket clientSocket = serverSocket.accept();
-                PrintWriter out =
-                        new PrintWriter(clientSocket.getOutputStream(), true);
-                Scanner in = new Scanner(
-                        new InputStreamReader(clientSocket.getInputStream()));
-                BufferedInputStream dataIn =
-                        new BufferedInputStream(new DataInputStream(clientSocket.getInputStream()));
-                BufferedOutputStream dataOut =
-                        new BufferedOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
+                ObjectOutputStream oos =
+                        new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
                 ObjectInputStream ois =
                         new ObjectInputStream(new DataInputStream(clientSocket.getInputStream()));
-                ObjectOutputStream oos =
-                        new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()))
         ) {
             boolean done = false;
 //&& in.hasNextLine()
             while(!done){
+                System.out.println("waiting for new command");
 
-                Packet message = (Packet) ois.readObject();
-
+                Packet message = (Packet) ois.readObject();//Message received from client
+                //clientCache.send means send to server
+                //oos.writeObject means sent to client
+                System.out.println("type=" + message.type);
                 switch (message.type){
                     case "text":
+                        System.out.println("text=" + message.text);
                         switch (message.text){
                             case "exit":
                                 cacheClient.send(message);
@@ -54,24 +51,30 @@ public class Relay {
                                 break;
                             case "list":
                                 cacheClient.send(message);
-                                Packet listReply = CacheClient.read(ois);
+                                Packet listReply = cacheClient.read();
+                                oos.writeObject(listReply);
                                 break;
                         }
+                        break;
                     case "file":
                         cacheClient.send(message);
+                        Packet pack = cacheClient.read();
+                        if (pack.type.equals("text")){
+                            oos.writeObject(pack);//relay fail message
+                        } else {
+                            byte[] bytes = Builder.assemble(pack.pack);
+                            Packet sendBytes = Packet.bytes(bytes);
+                            oos.writeObject(sendBytes);
+                        }
                         break;
                     case "list":
-                        List<File> fileList = message.files;
-                        String listStr = list2str(fileList);
-                        Packet sendList = Packet.text(listStr);
-                        cacheClient.send(sendList);
+                        System.out.println("Shouldn't receive bytes from client");
                         break;
                     case "bytes":
+                        System.out.println("Shouldn't receive bytes from client");
                         break;
                     case "pack":
-                        byte[] bytes = Builder.assemble(message.pack);
-                        Packet sendBytes = Packet.bytes(bytes);
-                        cacheClient.send(sendBytes);
+                        System.out.println("Shouldn't receive pack from client");
                         break;
                     default:
                         System.out.println("Invalid command");

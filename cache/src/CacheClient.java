@@ -12,16 +12,21 @@ public class CacheClient {
     public CacheClient(){
         System.out.println("Creating socket to '" + host + "' on port " + portNumber);
         try {
+            System.out.println("in constructor try");
             socket = new Socket(host, portNumber);
-            ois = new ObjectInputStream(new DataInputStream(socket.getInputStream()));
+            System.out.println("socket created");
             oos = new ObjectOutputStream(new DataOutputStream(socket.getOutputStream()));
+            System.out.println("oos created");
+            ois = new ObjectInputStream(new DataInputStream(socket.getInputStream()));
+            System.out.println("ois created");
         } catch (Exception e){
             throw new RuntimeException(e);
         }
+        System.out.println("Cache client initialised, port: " + portNumber);
     }
 
 
-    public static Packet read(ObjectInputStream ois) throws IOException, ClassNotFoundException{//Only call when you expect an answer
+    public Packet read() throws IOException, ClassNotFoundException{//Only call when you expect an answer
         return (Packet) ois.readObject();
     }
     public static void command(PrintWriter out, String string){
