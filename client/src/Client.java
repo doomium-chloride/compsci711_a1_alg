@@ -35,7 +35,7 @@ public class Client {
 
     }
 
-    private void command(String input) throws IOException, ClassNotFoundException{
+    public void command(String input) throws IOException, ClassNotFoundException{
         input = input.trim();
         if (input.startsWith("dl:")){
             String fileName = input.substring(3);
@@ -71,7 +71,13 @@ public class Client {
         }
     }
 
-    private void sendCommand(String command) throws IOException{
+    public List<File> getList() throws IOException, ClassNotFoundException{
+        sendCommand("list");
+        Packet reply = getReply();
+        return reply.files;
+    }
+
+    public void sendCommand(String command) throws IOException{
         oos.writeObject(Packet.text(command));
     }
 
