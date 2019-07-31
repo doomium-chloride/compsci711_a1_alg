@@ -24,14 +24,7 @@ public class GUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                GUI gui = new GUI();
-                gui.setMinimumSize(new Dimension(400, 400));
-                gui.setVisible(true);
-            }
-        });
+        SwingUtilities.invokeLater(new RunGUI());
     }
 }
 
@@ -92,6 +85,9 @@ class GUIpanel extends JPanel implements MouseListener, TreeModelListener {
                 client.sendCommand("clear");
             } else if (download == component){
                 client.command("dl:" + selectedFile);
+            } else if (fileJlist == component){
+                //do nothing
+                System.out.println("file selected: " + selectedFile);
             }
             else {
                 System.out.println("not implemented");

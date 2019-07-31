@@ -8,26 +8,41 @@ public class Relay {
     final static String DIRECTORY = "samples/";
     final static int portNumber = 8010;//connects to client
     static CacheClient cacheClient;
+    static boolean done = false;
+    ServerSocket serverSocket;
+    Socket clientSocket;
+    ObjectOutputStream oos;
+    ObjectInputStream ois;
+    Logger logger;
     public static void main(String[] args) {
-        new Relay().connect();
+        Relay cache = new Relay();
+        while(!done) {
+            try {
+                cache.connect();
+                done = true;
+            } catch (RuntimeException e){
+                e.printStackTrace();
+            }
+        }
     }
 
-    private void init(){
+    public Relay(){
+        super();
+        logger = new Logger();
+    }
+
+    private void init() throws IOException{
         cacheClient = new CacheClient();
         System.out.println("Cache server initialised, port: " + portNumber);
+        serverSocket = new ServerSocket(portNumber);
+        clientSocket = serverSocket.accept();
+        oos = new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
+        ois = new ObjectInputStream(new DataInputStream(clientSocket.getInputStream()));
     }
 
     public void connect(){
-        init();
-        try (
-                ServerSocket serverSocket = new ServerSocket(portNumber);
-                Socket clientSocket = serverSocket.accept();
-                ObjectOutputStream oos =
-                        new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
-                ObjectInputStream ois =
-                        new ObjectInputStream(new DataInputStream(clientSocket.getInputStream()));
-        ) {
-            boolean done = false;
+        try {
+            init();
 //&& in.hasNextLine()
             while(!done){
                 System.out.println("waiting for new command");
@@ -44,15 +59,19 @@ public class Relay {
                                 cacheClient.send(message);
                                 System.out.println("system exit");
                                 done = true;
+                                logger.record("exit");
                                 break;
                             case "clear":
                                 cacheClient.send(message);
                                 Builder.clear();
+                                logger.record("clear cache");
                                 break;
                             case "list":
                                 cacheClient.send(message);
                                 Packet listReply = cacheClient.read();
                                 oos.writeObject(listReply);
+                                logger.record("request list",
+                                        list2str(listReply.files));
                                 break;
                         }
                         break;
@@ -61,10 +80,13 @@ public class Relay {
                         Packet pack = cacheClient.read();
                         if (pack.type.equals("text")){
                             oos.writeObject(pack);//relay fail message
+                            logger.record("file request", "failed");
                         } else {
                             byte[] bytes = Builder.assemble(pack.pack);
                             Packet sendBytes = Packet.bytes(bytes);
                             oos.writeObject(sendBytes);
+                            logger.record("file request", "success");
+                            logger.record("file digest", toHexString(pack.pack.get(0)));
                         }
                         break;
                     case "list":
@@ -86,6 +108,7 @@ public class Relay {
         catch (Exception e){
             e.printStackTrace();
         }
+        System.out.println(logger.toString());
     }
     private String list2str(List<File> files){
         StringBuilder stringBuilder = new StringBuilder();

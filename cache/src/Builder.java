@@ -2,7 +2,6 @@ import java.util.*;
 
 public class Builder {
     public static Map<String, byte[]> map = new HashMap<>();
-    public static Set<String> sent = new HashSet<>();
 
     public static byte[] assemble(List<List<byte[]>> pairs){
         List<byte[]> list = pairs.get(0);
@@ -35,6 +34,5 @@ public class Builder {
     }
     public static void clear(){
         map.clear();
-        sent.clear();
     }
 }

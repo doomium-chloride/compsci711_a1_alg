@@ -11,8 +11,12 @@ public class Server {
     public static void main(String[] args) {
         Server server = new Server();
         while(!done) {
-            server.connect();
-            done = true;
+            try {
+                server.connect();
+                done = true;
+            } catch (RuntimeException e){
+                e.printStackTrace();
+            }
         }
     }
 
