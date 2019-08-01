@@ -36,6 +36,7 @@ class CacheGUI extends JPanel implements MouseListener, ListSelectionListener, L
     Relay cache;
     SwingWorker<Void,Void> worker;
     String selectedDigest;
+
     CacheGUI() {
         CacheGUI cacheGUI = this;
         cache = new Relay();

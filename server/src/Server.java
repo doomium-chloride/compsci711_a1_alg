@@ -28,64 +28,65 @@ public class Server {
 
     public void connect(){
         init();
-        try (
-                ServerSocket serverSocket = new ServerSocket(portNumber);
-                Socket clientSocket = serverSocket.accept();
-                /*PrintWriter out =
-                        new PrintWriter(clientSocket.getOutputStream(), true);
-                Scanner in = new Scanner(
-                        new InputStreamReader(clientSocket.getInputStream()));*/
-                BufferedOutputStream dataOut =
-                        new BufferedOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
-                ObjectOutputStream oos =
-                        new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
-                ObjectInputStream ois =
-                        new ObjectInputStream(new DataInputStream(clientSocket.getInputStream()));
-        ) {
-//&& in.hasNextLine()
-            while(!done) {
-                System.out.println("waiting for requests");
+        while(!done) {
+            try (
+                    ServerSocket serverSocket = new ServerSocket(portNumber);
+                    Socket clientSocket = serverSocket.accept();
+                    /*PrintWriter out =
+                            new PrintWriter(clientSocket.getOutputStream(), true);
+                    Scanner in = new Scanner(
+                            new InputStreamReader(clientSocket.getInputStream()));*/
+                    BufferedOutputStream dataOut =
+                            new BufferedOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
+                    ObjectOutputStream oos =
+                            new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
+                    ObjectInputStream ois =
+                            new ObjectInputStream(new DataInputStream(clientSocket.getInputStream()));
+            ) {
+    //&& in.hasNextLine()
 
-                Packet message = (Packet) ois.readObject();
+                    System.out.println("waiting for requests");
 
-                System.out.println("type=" + message.type);
+                    Packet message = (Packet) ois.readObject();
 
-                switch (message.type){
-                    case "text":
-                        System.out.println("text=" + message.text);
-                        switch (message.text){
-                            case "exit":
-                                System.out.println("system exit");
-                                done = true;
-                                break;
-                            case "list":
-                                List<File> files = list();
-                                Packet listSend = Packet.list(files);
-                                oos.writeObject(listSend);
-                                break;
-                            case "clear":
-                                clear();
-                                break;
-                        }
-                        break;
-                    case "file":
-                        File file = getFile(message.text);
-                        boolean succeedSend = send(file, oos);
-                        System.out.println("send succeeded " + succeedSend);
-                        if (!succeedSend){// fail message
-                            Packet fail = Packet.text("File transfer failed");
-                            oos.writeObject(fail);
-                        }
-                        break;
-                    default:
-                        System.out.println("invalid request");
-                        break;
-                }
+                    System.out.println("type=" + message.type);
+
+                    switch (message.type){
+                        case "text":
+                            System.out.println("text=" + message.text);
+                            switch (message.text){
+                                case "exit":
+                                    System.out.println("system exit");
+                                    done = true;
+                                    break;
+                                case "list":
+                                    List<File> files = list();
+                                    Packet listSend = Packet.list(files);
+                                    oos.writeObject(listSend);
+                                    break;
+                                case "clear":
+                                    clear();
+                                    break;
+                            }
+                            break;
+                        case "file":
+                            File file = getFile(message.text);
+                            boolean succeedSend = send(file, oos);
+                            System.out.println("send succeeded " + succeedSend);
+                            if (!succeedSend){// fail message
+                                Packet fail = Packet.text("File transfer failed");
+                                oos.writeObject(fail);
+                            }
+                            break;
+                        default:
+                            System.out.println("invalid request");
+                            break;
+                    }
+            }
+            catch (Exception e){
+                e.printStackTrace();
             }
             System.out.println("ended");
-        }
-        catch (Exception e){
-            e.printStackTrace();
         }
     }
     /*private String list(PrintWriter out){
