@@ -29,9 +29,7 @@ public class CacheClient {
     public Packet read() throws IOException, ClassNotFoundException{//Only call when you expect an answer
         return (Packet) ois.readObject();
     }
-    public static void command(PrintWriter out, String string){
-        out.println(string);
-    }
+
     public void send(Packet packet) throws  IOException{
         oos.writeObject(packet);
     }

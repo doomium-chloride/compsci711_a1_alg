@@ -12,12 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GUI extends JFrame {
+    public GUIpanel panel;
 
     public GUI(){
         super();
         setTitle("Client");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        GUIpanel panel = new GUIpanel();
+        panel = new GUIpanel();
         Container visibleArea = getContentPane();
         visibleArea.add(panel);
         pack();

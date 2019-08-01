@@ -1,4 +1,5 @@
 
+import javax.swing.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -41,10 +42,18 @@ public class Relay {
     }
 
     public void connect(){
+        connect(null);
+    }
+
+    public void connect(CacheGUI cacheGUI){
         try {
             init();
 //&& in.hasNextLine()
             while(!done){
+                if (cacheGUI != null){
+                    cacheGUI.updateLog();
+                }
+                System.out.println(logger.toString());
                 System.out.println("waiting for new command");
 
                 Packet message = (Packet) ois.readObject();//Message received from client
