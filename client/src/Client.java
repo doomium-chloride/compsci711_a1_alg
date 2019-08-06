@@ -8,6 +8,7 @@ public class Client {
     Socket socket;
     ObjectInputStream ois;
     ObjectOutputStream oos;
+    GUIpanel guiPanel;
     public void connect(){
         init();
         while(true){
@@ -47,7 +48,11 @@ public class Client {
                 System.out.println(fileGet.text);
             } else {//success
                 byte[] fileBytes = fileGet.bytes;
-                makeFile(fileBytes, fileName);
+                File picFile = makeFile(fileBytes, fileName);
+                System.out.println("downloaded filename");
+                if (picFile != null && picFile.exists()){
+                    guiPanel.showPic(picFile);
+                }
             }
         } else {
             input = input.toLowerCase();
@@ -89,14 +94,16 @@ public class Client {
         new Client().connect();
     }
 
-    public void makeFile(byte[] bytes, String name){
+    public File makeFile(byte[] bytes, String name){
         File newFile = new File("testing/" + name);
         try{
             OutputStream os = new FileOutputStream(newFile);
             os.write(bytes);
             os.close();
+            return newFile;
         } catch (Exception e){
             e.printStackTrace();
+            return null;
         }
     }
 

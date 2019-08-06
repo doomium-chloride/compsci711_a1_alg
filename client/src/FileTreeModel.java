@@ -3,12 +3,15 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FileTreeModel implements TreeModel {
+    List<TreeModelListener> listeners;
     List<File> list;
     public FileTreeModel(List<File> files){
         list = files;
+        listeners = new ArrayList<>();
     }
     public void list(List<File> newList){
         list = newList;
@@ -45,7 +48,10 @@ public class FileTreeModel implements TreeModel {
 
     @Override
     public void addTreeModelListener(TreeModelListener l) {
-
+        for (TreeModelListener listen:
+             listeners) {
+            listen.treeNodesChanged(null);
+        }
     }
 
     @Override

@@ -32,5 +32,6 @@ public class CacheClient {
 
     public void send(Packet packet) throws  IOException{
         oos.writeObject(packet);
+        oos.flush();
     }
 }

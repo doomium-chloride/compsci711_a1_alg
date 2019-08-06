@@ -15,6 +15,7 @@ public class Relay {
     ObjectOutputStream oos;
     ObjectInputStream ois;
     Logger logger;
+    CacheGUI cacheGUI;
     public static void main(String[] args) {
         Relay cache = new Relay();
         while(!done) {
@@ -40,84 +41,86 @@ public class Relay {
             clientSocket = serverSocket.accept();
             oos = new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
             ois = new ObjectInputStream(new DataInputStream(clientSocket.getInputStream()));
+            System.out.println("streams created, port: " + portNumber);
         } catch (IOException e){
             throw new RuntimeException(e);
         }
     }
 
     public void connect(){
-        connect(null);
-    }
-
-    public void connect(CacheGUI cacheGUI){
         init();
         while(!done){
             try {
 
     //&& in.hasNextLine()
 
-                    if (cacheGUI != null){
-                        cacheGUI.updateLog();
-                    }
-                    System.out.println(logger.toString());
-                    System.out.println("waiting for new command");
+                if (cacheGUI != null){
+                    cacheGUI.updateLog();
+                }
+                System.out.println(logger.toString());
+                System.out.println("waiting for new command");
 
-                    Packet message = (Packet) ois.readObject();//Message received from client
-                    //clientCache.send means send to server
-                    //oos.writeObject means sent to client
-                    System.out.println("type=" + message.type);
-                    switch (message.type){
-                        case "text":
-                            System.out.println("text=" + message.text);
-                            switch (message.text){
-                                case "exit":
-                                    cacheClient.send(message);
-                                    System.out.println("system exit");
-                                    done = true;
-                                    logger.record("exit");
-                                    break;
-                                case "clear":
-                                    cacheClient.send(message);
-                                    Builder.clear();
-                                    logger.record("clear cache");
-                                    break;
-                                case "list":
-                                    cacheClient.send(message);
-                                    Packet listReply = cacheClient.read();
-                                    oos.writeObject(listReply);
-                                    logger.record("request list",
-                                            list2str(listReply.files));
-                                    break;
-                            }
-                            break;
-                        case "file":
-                            cacheClient.send(message);
-                            Packet pack = cacheClient.read();
-                            if (pack.type.equals("text")){
-                                oos.writeObject(pack);//relay fail message
-                                logger.record("file request", "failed");
-                            } else {
-                                byte[] bytes = Builder.assemble(pack.pack);
-                                Packet sendBytes = Packet.bytes(bytes);
-                                oos.writeObject(sendBytes);
-                                logger.record("file request", "success");
-                                logger.record("file digest", toHexString(pack.pack.get(0)));
-                            }
-                            break;
-                        case "list":
-                            System.out.println("Shouldn't receive bytes from client");
-                            break;
-                        case "bytes":
-                            System.out.println("Shouldn't receive bytes from client");
-                            break;
-                        case "pack":
-                            System.out.println("Shouldn't receive pack from client");
-                            break;
-                        default:
-                            System.out.println("Invalid command");
-                            break;
+                Packet message = (Packet) ois.readObject();//Message received from client
+                if (message == null){
+                    System.out.println("Problem! message is null");
+                }
+                //clientCache.send means send to server
+                //oos.writeObject means sent to client
+                System.out.println("type=" + message.type);
+                switch (message.type){
+                    case "text":
+                        System.out.println("text=" + message.text);
+                        switch (message.text){
+                            case "exit":
+                                cacheClient.send(message);
+                                System.out.println("system exit");
+                                done = true;
+                                logger.record("exit");
+                                cacheGUI.terminate();
+                                break;
+                            case "clear":
+                                cacheClient.send(message);
+                                Builder.clear();
+                                logger.record("clear cache");
+                                break;
+                            case "list":
+                                cacheClient.send(message);
+                                Packet listReply = cacheClient.read();
+                                oos.writeObject(listReply);
+                                logger.record("request list",
+                                        list2str(listReply.files));
+                                break;
+                        }
+                        break;
+                    case "file":
+                        cacheClient.send(message);
+                        Packet pack = cacheClient.read();
+                        if (pack.type.equals("text")){
+                            oos.writeObject(pack);//relay fail message
+                            logger.record("file request", "failed");
+                        } else {
+                            byte[] bytes = Builder.assemble(pack.pack);
+                            Packet sendBytes = Packet.bytes(bytes);
+                            oos.writeObject(sendBytes);
+                            logger.record("file request", "success");
+                            logger.record("file from cache", Builder.message);
+                        }
+                        break;
+                    case "list":
+                        System.out.println("Shouldn't receive bytes from client");
+                        break;
+                    case "bytes":
+                        System.out.println("Shouldn't receive bytes from client");
+                        break;
+                    case "pack":
+                        System.out.println("Shouldn't receive pack from client");
+                        break;
+                    default:
+                        System.out.println("Invalid command");
+                        break;
 
                 }
+                oos.flush();
 
             }
             catch (Exception e){
@@ -130,6 +133,8 @@ public class Relay {
     }
     private void reset(){
         try{
+            ois.close();
+            oos.close();
             serverSocket.close();
             init();
         } catch (IOException e){

@@ -1,6 +1,7 @@
 import java.util.*;
 
 public class Builder {
+    public static String message = "";
     public static Map<String, byte[]> map = new HashMap<>();
 
     public static byte[] assemble(List<List<byte[]>> pairs){
@@ -24,7 +25,8 @@ public class Builder {
                 byteList.add(piece);
             }
         }
-        System.out.println(100.0*cached/length + "% from cached");
+        message = 100.0*cached/length + "% from cached";
+        System.out.println(message);
         int len = byteList.size();
         byte[] bytes = new byte[len];
         for (int i = 0; i < len; i++) {

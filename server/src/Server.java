@@ -16,6 +16,7 @@ public class Server {
                 done = true;
             } catch (RuntimeException e){
                 e.printStackTrace();
+                return;
             }
         }
     }
@@ -23,26 +24,17 @@ public class Server {
     private void init(){
         sent = new HashSet<>();
         cache = new Cache();
-        System.out.println("Server initialised, port: " + portNumber);
     }
 
     public void connect(){
         init();
-        while(!done) {
-            try (
-                    ServerSocket serverSocket = new ServerSocket(portNumber);
-                    Socket clientSocket = serverSocket.accept();
-                    /*PrintWriter out =
-                            new PrintWriter(clientSocket.getOutputStream(), true);
-                    Scanner in = new Scanner(
-                            new InputStreamReader(clientSocket.getInputStream()));*/
-                    BufferedOutputStream dataOut =
-                            new BufferedOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
-                    ObjectOutputStream oos =
-                            new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
-                    ObjectInputStream ois =
-                            new ObjectInputStream(new DataInputStream(clientSocket.getInputStream()));
-            ) {
+        try (
+                ServerSocket serverSocket = new ServerSocket(portNumber);
+                Socket clientSocket = serverSocket.accept();
+                ObjectOutputStream oos = new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
+                ObjectInputStream ois = new ObjectInputStream(new DataInputStream(clientSocket.getInputStream()));
+        ) {
+            while(!done){
     //&& in.hasNextLine()
 
                     System.out.println("waiting for requests");
@@ -83,10 +75,11 @@ public class Server {
                             break;
                     }
             }
-            catch (Exception e){
-                e.printStackTrace();
-            }
+
             System.out.println("ended");
+        } catch (Exception e){
+            System.out.println("crash");
+            throw new RuntimeException(e);
         }
     }
     /*private String list(PrintWriter out){
