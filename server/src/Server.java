@@ -118,6 +118,7 @@ public class Server {
             hashList = cache.getHashList(fragments);
             pack = pack(hashList);
             Packet packet = Packet.pack(pack);
+            packet.text = file.getName();
             oos.writeObject(packet);
         } catch (IOException e){
             e.printStackTrace();

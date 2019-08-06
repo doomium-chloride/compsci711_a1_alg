@@ -101,8 +101,10 @@ public class Relay {
                         } else {
                             byte[] bytes = Builder.assemble(pack.pack);
                             Packet sendBytes = Packet.bytes(bytes);
+                            String fileGetName = pack.text;
                             oos.writeObject(sendBytes);
                             logger.record("file request", "success");
+                            logger.record("filename is", fileGetName);
                             logger.record("file from cache", Builder.message);
                         }
                         break;
