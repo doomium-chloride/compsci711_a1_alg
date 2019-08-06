@@ -43,6 +43,7 @@ public class Cache {
         int left = start;
         int end = 3;
         int right = end;
+        int longest = 0;
         while (true) {
             if (end >= len){
                 right = len;
@@ -55,9 +56,11 @@ public class Cache {
                 byte[] copy = Arrays.copyOfRange(bytes, left, right);
                 list.add(copy);
                 left = right;
+                longest = Math.max(longest, copy.length);
             }
             end++;start++;
         }
+        System.out.println("longest cache size: " + longest);
         return list;
     }
     public List<byte[]> getHashList(List<byte[]> digest){
