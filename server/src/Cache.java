@@ -61,6 +61,7 @@ public class Cache {
             end++;start++;
         }
         System.out.println("longest cache size: " + longest);
+        System.out.println("Average cache size: " + bytes.length/list.size());
         return list;
     }
     public List<byte[]> getHashList(List<byte[]> digest){
